@@ -1,0 +1,22 @@
+name: ALLCOINS RP API checks
+
+on:
+  push:
+    branches: [allcoins-rp]
+  pull_request:
+    branches: [allcoins-rp]
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: node --check src/server.js
+      - run: npm test

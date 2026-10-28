@@ -1,19 +1,33 @@
 # ALLCOINS RP architecture
 
-- **Game server:** dedicated open.mp server for GTA San Andreas multiplayer. This is separate from the web API and needs its own compatible host and compiled gamemode.
-- **RP API:** Node.js/Express service for game-server requests, RP accounts, characters, Telegram linking, and wallet proxying.
-- **RP data:** PostgreSQL tables for RP accounts, characters, links, link codes, and vehicles. There is intentionally no local AC balance column.
-- **Wallet authority:** the existing ALLCOINS backend and its database remain the only source of truth for AC.
-- **Telegram:** the existing backend validates Telegram WebApp initData; only that trusted backend can confirm account links.
+- **Game server:** a dedicated open.mp server is planned; its starter gamemode is not yet a running production server.
+- **RP API:** a Neon Function `allcoinsrp` has been deployed for the HTTP control plane. The Node.js/Express API source in `api/` remains the portable service implementation.
+- **RP data:** Neon PostgreSQL contains accounts, characters, Telegram links, one-time link codes, vehicles, character stats, inventory, wallet-operation idempotency records and moderation history.
+- **Wallet authority:** the existing ALLCOINS backend and database remain the only source of truth for AC. No AC balance is stored in the RP database.
+- **Telegram:** the existing ALLCOINS backend must verify Telegram WebApp `initData` itself before confirming a link.
 
-## Safety boundaries
+## Current deployment
+
+- Neon project: `allcoins-rp`, PostgreSQL 17, region `aws-eu-central-1`.
+- Neon Function URL: `https://br-nameless-lake-b9zqg5sa-allcoinsrp.compute.c-7.eu-central-1.aws.neon.tech/`.
+- Neon Data API is enabled with external JWT verification.
+- The `rp_anon` role does not have direct read/write privileges on account, character, link, vehicle, inventory or wallet-operation tables.
+- SQL-level health/account/character procedure checks passed; external HTTP end-to-end checks are still outstanding.
+
+## Security boundaries
 
 1. Never ship server secrets in a client or gamemode binary.
-2. Use server-to-server authentication for every protected API route.
+2. Authenticate every protected route server-to-server.
 3. Use one-time, short-lived link codes; store only their hashes.
 4. Use idempotency keys and atomic wallet mutations in the authoritative ALLCOINS backend.
-5. Return unavailable errors rather than inventing a local balance if ALLCOINS is unreachable.
-6. Do not deploy the wallet bridge with placeholder credentials or enable live wallet changes before main API support exists.
+5. Return unavailable errors rather than inventing a local AC balance if ALLCOINS is unreachable.
+6. Do not enable live AC purchases/rewards until the existing ALLCOINS backend has the required internal wallet routes and those routes are tested.
+7. Do not trust a Telegram user ID supplied directly by a browser or game client.
 
-## Current stage
-Initial source scaffold only. The API is not yet deployed, database migration has not been applied, wallet endpoints have not been added to the existing ALLCOINS backend, and the open.mp server is not running. Android cross-play depends on a compatible mobile client and requires separate testing.
+## Next steps
+
+1. Verify the public Neon Function routes with external HTTP requests.
+2. Align and test the deployed handler and versioned source code.
+3. Add and test the internal AC balance/transaction routes to the existing backend without changing the Mini App URL.
+4. Compile and deploy the dedicated game server on a UDP-capable host.
+5. Test supported PC and Android clients before claiming cross-play.

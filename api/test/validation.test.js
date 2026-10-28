@@ -11,6 +11,16 @@ function validUuid(value) {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+function validJobCode(value) {
+  return typeof value === 'string' && /^[a-z][a-z0-9_]{1,39}$/.test(value);
+}
+function validInventoryItem(itemCode, quantity, metadata) {
+  return typeof itemCode === 'string' &&
+    /^[a-z][a-z0-9_]{1,47}$/.test(itemCode) &&
+    Number.isInteger(quantity) && quantity >= 1 && quantity <= 1000 &&
+    metadata !== null && typeof metadata === 'object' && !Array.isArray(metadata);
+}
+
 test('accepts roleplay character names and rejects malformed names', () => {
   assert.equal(validCharacterName('Alex_River'), true);
   assert.equal(validCharacterName('ab'), false);
@@ -27,4 +37,20 @@ test('AC amounts are positive integer strings only', () => {
 test('idempotency and account identifiers must be UUIDs', () => {
   assert.equal(validUuid('a5e6eaf0-7b42-4ad5-9b36-cd01a98b7b2d'), true);
   assert.equal(validUuid('not-a-uuid'), false);
+});
+
+test('job codes must be safe lowercase identifiers', () => {
+  assert.equal(validJobCode('mechanic'), true);
+  assert.equal(validJobCode('taxi_driver'), true);
+  assert.equal(validJobCode('Mechanic'), false);
+  assert.equal(validJobCode('two words'), false);
+  assert.equal(validJobCode(''), false);
+});
+
+test('inventory input accepts bounded item quantities and object metadata', () => {
+  assert.equal(validInventoryItem('water_bottle', 3, {}), true);
+  assert.equal(validInventoryItem('water_bottle', 0, {}), false);
+  assert.equal(validInventoryItem('water_bottle', 1001, {}), false);
+  assert.equal(validInventoryItem('Water', 1, {}), false);
+  assert.equal(validInventoryItem('water_bottle', 1, []), false);
 });

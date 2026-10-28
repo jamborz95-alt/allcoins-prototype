@@ -1,0 +1,11 @@
+echo Executing ALLCOINS RP server configuration...
+lanmode 0
+maxplayers 50
+port 7777
+hostname ALLCOINS RP | Development
+gamemode0 allcoins_rp 1
+filterscripts
+plugins
+announce 0
+query 1
+language Russian

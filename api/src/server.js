@@ -84,7 +84,7 @@ app.patch('/api/rp/server/characters/:characterId/stats', requireGameServer, asy
         typeof health !== 'number' || !Number.isFinite(health) || health < 0 || health > 100 ||
         !Number.isInteger(hunger) || hunger < 0 || hunger > 100 ||
         !Number.isInteger(thirst) || thirst < 0 || thirst > 100 ||
-        !/^(0|[1-9]\\d{0,18})$/.test(exp) || BigInt(exp) > 9223372036854775807n ||
+        !/^(0|[1-9]\d{0,18})$/.test(exp) || BigInt(exp) > 9223372036854775807n ||
         typeof jobCode !== 'string' || !/^[a-z][a-z0-9_]{1,39}$/.test(jobCode)) {
       return res.status(400).json({ ok: false, error: 'INVALID_CHARACTER_STATS' });
     }
